@@ -31,49 +31,90 @@ func main() {
 	http.HandleFunc("/", Inicio)
 	http.HandleFunc("/crear", Crear)
 	http.HandleFunc("/insertar", Insertar)
+	http.HandleFunc("/borrar", Borrar)
+	http.HandleFunc("/editar", Editar)
 	fmt.Println("servidor corriendo...")
 	http.ListenAndServe(":8080", nil)
 }
+func Editar(w http.ResponseWriter, r *http.Request) {
+	idCamiseta := r.URL.Query().Get("id")
+	fmt.Println(idCamiseta)
 
-type Camiseta struct{
-	Id int
-	Nombre string
-	Marca string
-	Precio int
-	Foto string
-}
-func Inicio(w http.ResponseWriter, r *http.Request) {
-	 ConexionEstablecida := dbconexion()
-	 consultarRegistros, err := ConexionEstablecida.Query("SELECT * FROM camisetas")
+	ConexionEstablecida := dbconexion()
+	consultarRegistro, err := ConexionEstablecida.Query("SELECT * FROM camisetas WHERE id=?", idCamiseta)
 
-	 if err != nil {
-	 	panic(err.Error())
-	 }
-	 camiseta:=Camiseta{}
-	 arregloCamiseta:=[]Camiseta{}
-
-	 for consultarRegistros.Next(){
-		var id,precio int
-		var nombre,marca,foto string
-		err=consultarRegistros.Scan(&id,&nombre, &marca, &precio, &foto)
+	camiseta := Camiseta{}
+	for consultarRegistro.Next() {
+		var id, precio int
+		var nombre, marca, foto string
+		err = consultarRegistro.Scan(&id, &nombre, &marca, &precio, &foto)
 		if err != nil {
 			panic(err.Error())
 		}
-		camiseta.Id=id
-		camiseta.Nombre=nombre
-		camiseta.Marca=marca
-		camiseta.Precio=precio
-		camiseta.Foto=foto
-		arregloCamiseta=append(arregloCamiseta, camiseta)
-	 }
-	 fmt.Println(arregloCamiseta)
+		camiseta.Id = id
+		camiseta.Nombre = nombre
+		camiseta.Marca = marca
+		camiseta.Precio = precio
+		camiseta.Foto = foto
+	}
+	fmt.Println(camiseta)
+
+}
+
+func Borrar(w http.ResponseWriter, r *http.Request) {
+	idCamiseta := r.URL.Query().Get("id")
+	fmt.Println(idCamiseta)
+	ConexionEstablecida := dbconexion()
+	borrarRegistro, err := ConexionEstablecida.Prepare("DELETE FROM camisetas WHERE id=?")
+	if err != nil {
+		panic(err.Error())
+	}
+	borrarRegistro.Exec(idCamiseta)
+
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+
+}
+
+type Camiseta struct {
+	Id     int
+	Nombre string
+	Marca  string
+	Precio int
+	Foto   string
+}
+
+func Inicio(w http.ResponseWriter, r *http.Request) {
+	ConexionEstablecida := dbconexion()
+	consultarRegistros, err := ConexionEstablecida.Query("SELECT * FROM camisetas")
+
+	if err != nil {
+		panic(err.Error())
+	}
+	camiseta := Camiseta{}
+	arregloCamiseta := []Camiseta{}
+
+	for consultarRegistros.Next() {
+		var id, precio int
+		var nombre, marca, foto string
+		err = consultarRegistros.Scan(&id, &nombre, &marca, &precio, &foto)
+		if err != nil {
+			panic(err.Error())
+		}
+		camiseta.Id = id
+		camiseta.Nombre = nombre
+		camiseta.Marca = marca
+		camiseta.Precio = precio
+		camiseta.Foto = foto
+		arregloCamiseta = append(arregloCamiseta, camiseta)
+	}
+	//fmt.Println(arregloCamiseta)
 	plantillas.ExecuteTemplate(w, "inicio", arregloCamiseta)
 }
 func Crear(w http.ResponseWriter, r *http.Request) {
 	//fmt.Fprintf(w, "HOlaaaaa")
 	plantillas.ExecuteTemplate(w, "crear", nil)
 }
-func Insertar(w http.ResponseWriter,r *http.Request) {
+func Insertar(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		nombre := r.FormValue("nombre")
 		marca := r.FormValue("marca")
@@ -87,7 +128,7 @@ func Insertar(w http.ResponseWriter,r *http.Request) {
 		}
 		insertarRegistros.Exec(nombre, marca, precio, foto)
 
-		http.Redirect(w, r, "/",http.StatusMovedPermanently)
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 
 	}
 }

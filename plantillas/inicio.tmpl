@@ -4,34 +4,30 @@
 <table class="table">
   <thead>
     <tr>
-      <th>id</th>
+      <th>Id</th>
       <th>Nombre</th>
       <th>Marca</th>
       <th>Precio</th>
       <th>Foto</th>
+      <th>Acciones</th>
     </tr>
   </thead>
   <tbody>
     {{range.}}
-    <section>
-        <div class="container">
-            <div class="row">
-                <div class="card mb-3">
-                    <img src={{.Foto}} class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">Nombre: {{.Nombre}}</h5>
-                        <p class="card-text">Marca: {{.Marca}}</p>
-                        <p class="card-text"><small class="text-muted">Precio: {{.Precio}} COP</small></p>
-                    </div>
-                </div>
-            </div>
-    </section>
-        {{end}}
-    <tr>
-      <td scope="row"></td>
-      <td></td>
-      <td></td>
+    </p>
+        <tr>
+      <td>{{.Id}}</td>
+      <td>{{.Nombre}}</td>
+      <td>{{.Marca}}</td>
+      <td>{{.Precio}}</td>
+      <td>{{.Foto}}</td>
+      <td>
+      <a name="" id="" class="btn btn-warning" href="/editar?={{.Id}}" role="button">Editar</a>
+      |
+      <a name="" id="" class="btn btn-danger" href="/borrar?={{.Id}}" role="button">Borrar</a>
+      </td>
     </tr>
+    {{end}}
   </tbody>
 </table>
 {{template "footer"}}
